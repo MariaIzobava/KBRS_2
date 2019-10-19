@@ -1,5 +1,19 @@
 # Лабораторная работа №2 по КБРС
 
+### Code description
+
+1. Source code is stored in src.main.java.com.company.* package:
+    * client - Client code.
+    * server - Server code.
+    * idea_cipher - IDEA + CFB code.
+    * rsa - code for RSA generation and operation.
+    * utils - classes for interservice communication support.
+    * experiments - code, used for experimenting.
+    
+2. Text files are stored in src.main.resources:
+    * atlas_shrugged.txt
+    * pride_and_prejudice.txt
+    * world_without_end.txt
 
 ### Launching services
 * To launch Server run from src/ folder:
