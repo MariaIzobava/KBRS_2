@@ -24,13 +24,13 @@ public class TestAsServer {
             System.out.println("RSA/publicKey: " + Base64.getEncoder().encodeToString(keyPairGenerator.getPublicKey().getEncoded()));
             System.out.println("RSA/privateKey: " + Base64.getEncoder().encodeToString(keyPairGenerator.getPrivateKey().getEncoded()));
 
-            RSAUtil util = new RSAUtil(Base64.getEncoder().encodeToString(keyPairGenerator.getPublicKey().getEncoded()),
+            RSAUtil.init(Base64.getEncoder().encodeToString(keyPairGenerator.getPublicKey().getEncoded()),
                     Base64.getEncoder().encodeToString(keyPairGenerator.getPrivateKey().getEncoded()));
 
 
-            String encryptedString = Base64.getEncoder().encodeToString(util.encrypt("Random text for testing"));
+            String encryptedString = Base64.getEncoder().encodeToString(RSAUtil.encrypt("Random text for testing"));
             System.out.println("Encrypted String: " + encryptedString);
-            String decryptedString = util.decrypt(encryptedString);
+            String decryptedString = RSAUtil.decrypt(encryptedString);
             System.out.println("Eecrypted String: " + decryptedString);
 
 
