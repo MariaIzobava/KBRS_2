@@ -1,4 +1,4 @@
-# Лабораторная работа №2 по КБРС
+# KBRS: lab 2
 Design doc: https://docs.google.com/document/d/1DBnj9iXSVMwSpXvwBMLQng3bQVJodxtH57EpnEb96xU/edit
 
 ### Code description
