@@ -1,15 +1,15 @@
 package main.java.com.company.server;
 
+import main.java.com.company.gm.GM;
 import main.java.com.company.idea_cipher.modes.FileCipher;
 import main.java.com.company.idea_cipher.modes.OperationMode;
-import main.java.com.company.rsa.RSAUtil;
+import main.java.com.company.rsa.RSA;
 import main.java.com.company.utils.Command;
 import main.java.com.company.utils.ConnUtill;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Base64;
 import java.util.Random;
 
 public class Server {
@@ -81,9 +81,10 @@ public class Server {
 
             ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, encodedTextPath);
 
-            RSAUtil.init(publicKey, "");
+            //RSA rsa = new RSA(publicKey);
+            GM gm  = new GM(publicKey);
 
-            String encryptedSessionKey = Base64.getEncoder().encodeToString(RSAUtil.encrypt(sessionKey));
+            String encryptedSessionKey = gm.encrypt(sessionKey);
 
             ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, encryptedSessionKey);
 

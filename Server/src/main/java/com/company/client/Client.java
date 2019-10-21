@@ -1,20 +1,21 @@
 package main.java.com.company.client;
 
+import main.java.com.company.gm.GM;
 import main.java.com.company.idea_cipher.modes.FileCipher;
 import main.java.com.company.idea_cipher.modes.OperationMode;
-import main.java.com.company.rsa.RSAKeyPairGenerator;
-import main.java.com.company.rsa.RSAUtil;
+import main.java.com.company.rsa.RSA;
 import main.java.com.company.utils.Command;
 import main.java.com.company.utils.ConnUtill;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Base64;
 import java.util.Scanner;
 
 public class Client {
 
     private static final String PATH = "/Users/mariaizobova/Desktop/4_курс/КБРС/KBRS_2/Server/src/main/resources/";
+    private static RSA rsa = null;
+    private static GM gm = null;
 
     public static void main(String[] args) {
 
@@ -61,7 +62,7 @@ public class Client {
                     System.out.println("Encoded text is in " + encodedTextPath);
                     System.out.println("Decoded text will be in " + decodedTextPath);
 
-                    String decryptedSessionKey = RSAUtil.decrypt(cmd_key.getParam());
+                    String decryptedSessionKey = gm.decrypt(cmd_key.getParam());
                     FileCipher task = new FileCipher(encodedTextPath,
                             decodedTextPath, decryptedSessionKey, false, OperationMode.Mode.CFB);
 
@@ -82,12 +83,11 @@ public class Client {
     private static void generateRSA(ObjectOutputStream out) throws Exception {
 
         // Generate new RSA
-        RSAKeyPairGenerator keyPairGenerator = new RSAKeyPairGenerator();
-        RSAUtil.init(Base64.getEncoder().encodeToString(keyPairGenerator.getPublicKey().getEncoded()),
-                Base64.getEncoder().encodeToString(keyPairGenerator.getPrivateKey().getEncoded()));
+        //rsa = new RSA();
+        gm = new GM();
 
         // Send RSA public key to the server
         ConnUtill.sendMsg(out, Command.CommandType.UPDATE_RSA,
-                Base64.getEncoder().encodeToString(keyPairGenerator.getPublicKey().getEncoded()));
+                gm.getPublicKey());
     }
 }
