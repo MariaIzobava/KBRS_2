@@ -7,7 +7,7 @@ Design doc: https://docs.google.com/document/d/1DBnj9iXSVMwSpXvwBMLQng3bQVJodxtH
     * client - Client code.
     * server - Server code.
     * idea_cipher - IDEA + CFB code.
-    * rsa - code for RSA generation and operation.
+    * async_encryptions - code for RSA and GM generation and operation.
     * utils - classes for interservice communication support.
     * experiments - code, used for experimenting.
     
