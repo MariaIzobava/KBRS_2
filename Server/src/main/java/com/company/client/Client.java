@@ -1,9 +1,9 @@
 package main.java.com.company.client;
 
-import main.java.com.company.gm.GM;
+import main.java.com.company.async_encryptions.GM;
 import main.java.com.company.idea_cipher.modes.FileCipher;
 import main.java.com.company.idea_cipher.modes.OperationMode;
-import main.java.com.company.rsa.RSA;
+import main.java.com.company.async_encryptions.RSA;
 import main.java.com.company.utils.Command;
 import main.java.com.company.utils.ConnUtill;
 

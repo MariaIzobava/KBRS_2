@@ -1,8 +1,7 @@
 package main.java.com.company.experiments;
 
-import main.java.com.company.gm.GM;
-import main.java.com.company.idea_cipher.modes.FileCipher;
-import main.java.com.company.rsa.RSA;
+import main.java.com.company.async_encryptions.GM;
+import main.java.com.company.async_encryptions.RSA;
 
 public class TestAsServer {
 

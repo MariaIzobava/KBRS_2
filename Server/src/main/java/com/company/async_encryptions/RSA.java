@@ -1,6 +1,4 @@
-package main.java.com.company.rsa;
-
-import main.java.com.company.gm.AsyncEncription;
+package main.java.com.company.async_encryptions;
 
 import javax.crypto.Cipher;
 import java.security.*;

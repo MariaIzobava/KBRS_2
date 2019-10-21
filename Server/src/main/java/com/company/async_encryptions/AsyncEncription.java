@@ -1,4 +1,4 @@
-package main.java.com.company.gm;
+package main.java.com.company.async_encryptions;
 
 public interface AsyncEncription<T1, T2> {
     void init();
