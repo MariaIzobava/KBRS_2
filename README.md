@@ -39,4 +39,5 @@ java main.java.com.company.client.Client
 ```
 
 2. Android Client looks like that:
+<img width="339" alt="Снимок экрана 2019-10-22 в 22 01 09" src="https://user-images.githubusercontent.com/12963610/67320882-7bb4a500-f517-11e9-9d04-aa37f6aed940.png">
 
