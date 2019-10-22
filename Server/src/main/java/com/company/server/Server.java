@@ -9,6 +9,8 @@ import main.java.com.company.utils.ConnUtill;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class Server {
@@ -42,7 +44,7 @@ public class Server {
 
     private static class ClientHandler implements Runnable {
 
-        private static final String PATH = "/Users/mariaizobova/Desktop/4_курс/КБРС/KBRS_2/Server/src/main/resources/";
+        private static final String PATH = "/main/resources/";
 
         private final Socket clientSocket;
 
@@ -53,23 +55,27 @@ public class Server {
         private String getNewSessionKey() {
             Random rand = new Random();
             StringBuilder str = new StringBuilder();
-            for (int i = 0; i < rand.nextInt() % 10 + 5; i++)
+            while (str.length()<5) {
                 str.append((char)('a' + rand.nextInt() % 26));
+            }
             return str.toString();
         }
 
         private void resolveRequest(String textName) throws Exception {
             String InitialTextPath, encodedTextPath;
 
+            String home = new java.io.File( "." ).getCanonicalPath();
+
             System.out.printf("Sent from the client: %s\n", textName);
-            InitialTextPath = new String(PATH + textName + ".txt");
+            InitialTextPath = new String(home+PATH + textName + ".txt");
 
             if (!(new File(InitialTextPath).exists())) {
+                System.out.println("path:"+InitialTextPath);
                 ConnUtill.sendMsg(out, Command.CommandType.ERROR, "Text with name " + textName + " does not exist");
                 return;
             }
 
-            encodedTextPath = new String(PATH + textName + "_encoded" + ".txt");
+            encodedTextPath = new String(home + PATH + textName + "_encoded" + ".txt");
 
             String sessionKey = getNewSessionKey();
 
@@ -78,12 +84,15 @@ public class Server {
 
             task.cryptFile();
 
-            ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, encodedTextPath);
+            byte[] contents = Files.readAllBytes(Paths.get(encodedTextPath));
+            ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, contents);
 
             //RSA rsa = new RSA(publicKey);
             GM gm  = new GM(publicKey);
 
+            System.out.println("sessionKey="+sessionKey);
             String encryptedSessionKey = gm.encrypt(sessionKey);
+            System.out.println("encryptedSessionKey="+encryptedSessionKey);
 
             ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, encryptedSessionKey);
 
