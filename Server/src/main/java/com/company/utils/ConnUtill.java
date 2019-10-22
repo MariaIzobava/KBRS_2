@@ -9,4 +9,10 @@ public class ConnUtill {
         out.writeObject(new Command(type, msg));
         out.flush();
     }
+
+    public static void sendMsg(ObjectOutputStream out, Command.CommandType type, byte[] msg) throws IOException {
+        out.writeObject(new Command(type, msg));
+        out.flush();
+    }
+
 }

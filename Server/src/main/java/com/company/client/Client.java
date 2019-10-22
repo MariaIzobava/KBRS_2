@@ -9,15 +9,19 @@ import main.java.com.company.utils.ConnUtill;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class Client {
 
-    private static final String PATH = "/Users/mariaizobova/Desktop/4_курс/КБРС/KBRS_2/Server/src/main/resources/";
+    private static final String PATH = "/";
     private static RSA rsa = null;
     private static GM gm = null;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
+        String home = new java.io.File( "." ).getCanonicalPath();
 
         String host = "127.0.0.1";
         int port = 32000;
@@ -56,13 +60,17 @@ public class Client {
 
                     System.out.println("File and session key were received successfully");
 
-                    String encodedTextPath = cmd_file.getParam();
-                    String decodedTextPath = new String(PATH + line + "_decoded" + ".txt");
+                    byte[] encodedText = cmd_file.get_byteParam();
+                    String encodedTextPath = home + PATH + line + "_encoded" + ".txt";
+                    Files.write( Paths.get(encodedTextPath), encodedText);
+                    String decodedTextPath = new String(home + PATH + line + "_decoded" + ".txt");
 
                     System.out.println("Encoded text is in " + encodedTextPath);
                     System.out.println("Decoded text will be in " + decodedTextPath);
 
+                    System.out.println("encryptedSessionKey"+cmd_key.getParam());
                     String decryptedSessionKey = gm.decrypt(cmd_key.getParam());
+                    System.out.println("decryptedSessionKey"+decryptedSessionKey);
                     FileCipher task = new FileCipher(encodedTextPath,
                             decodedTextPath, decryptedSessionKey, false, OperationMode.Mode.CFB);
 
