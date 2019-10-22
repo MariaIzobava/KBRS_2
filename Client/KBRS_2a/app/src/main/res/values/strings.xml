@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">KBRS_2a</string>
+    <string name="action_settings">Settings</string>
+    <string name="connect">Connect</string>
+    <string name="rsa">Update RSA keys</string>
+    <string name="get">Get</string>
+</resources>
