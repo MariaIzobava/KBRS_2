@@ -40,7 +40,9 @@ public class Command  implements Serializable {
     public enum CommandType {
         UPDATE_RSA,
         REQUEST_TEXT,
-        ERROR
+        ERROR,
+        REQUEST_ACCESS,
+        VERIFY_CREDENTIALS
     }
 }
 

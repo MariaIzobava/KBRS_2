@@ -11,11 +11,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class Server {
-    public static void main(String[] args) {
 
+     private static HashMap<String, String> credentialsList = new HashMap<>();
+
+
+    public static void main(String[] args) {
+        credentialsList.put("admin","admin");
         ServerSocket server = null;
         try {
             server = new ServerSocket(32000);
@@ -49,6 +55,7 @@ public class Server {
         private final Socket clientSocket;
 
         private String publicKey;
+        private String sessionKey;
         private ObjectOutputStream out = null;
         private ObjectInputStream in = null;
 
@@ -77,8 +84,6 @@ public class Server {
 
             encodedTextPath = new String(home + PATH + textName + "_encoded" + ".txt");
 
-            String sessionKey = getNewSessionKey();
-
             FileCipher task = new FileCipher(InitialTextPath,
                     encodedTextPath, sessionKey, true, OperationMode.Mode.CFB);
 
@@ -88,13 +93,13 @@ public class Server {
             ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, contents);
 
             //RSA rsa = new RSA(publicKey);
-            GM gm  = new GM(publicKey);
+//            GM gm  = new GM(publicKey);
+//
+//            System.out.println("sessionKey="+sessionKey);
+//            String encryptedSessionKey = gm.encrypt(sessionKey);
+//            System.out.println("encryptedSessionKey="+encryptedSessionKey);
 
-            System.out.println("sessionKey="+sessionKey);
-            String encryptedSessionKey = gm.encrypt(sessionKey);
-            System.out.println("encryptedSessionKey="+encryptedSessionKey);
-
-            ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, encryptedSessionKey);
+            //ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, encryptedSessionKey);
 
         }
 
@@ -114,16 +119,38 @@ public class Server {
 
                     switch (cmd.getCommandType()) {
 
-                        case UPDATE_RSA:
+                        case REQUEST_ACCESS:
                             publicKey = cmd.getParam();
                             System.out.println("Public Key successfully updated");
+                            sessionKey = getNewSessionKey();
+
+                            GM gm  = new GM(publicKey);
+
+                            System.out.println("sessionKey="+sessionKey);
+                            String encryptedSessionKey = gm.encrypt(sessionKey);
+                            System.out.println("encryptedSessionKey="+encryptedSessionKey);
+
+                            ConnUtill.sendMsg(out, Command.CommandType.REQUEST_ACCESS, encryptedSessionKey);
                             break;
 
                         case REQUEST_TEXT:
-                            if (publicKey.equals(""))
+                            if (publicKey.equals("")) {
                                 ConnUtill.sendMsg(out, Command.CommandType.ERROR, "Set up Public Key first");
+                                break;
+                            }
                             resolveRequest(cmd.getParam());
                             break;
+
+                        case VERIFY_CREDENTIALS:
+                            // login and password should be decrypted
+                            String[] credentials=cmd.getParam().split(" ");
+                            String msg = "false";
+                            if (credentialsList.containsKey(credentials[0]))
+                                if (credentialsList.get(credentials[0]).equals(credentials[1]))
+                                    msg = "true";
+                            ConnUtill.sendMsg(out, Command.CommandType.VERIFY_CREDENTIALS, msg);
+                            break;
+
 
                         case ERROR:
                             System.out.println("Server received ERROR message from Client: " + cmd.getParam());
