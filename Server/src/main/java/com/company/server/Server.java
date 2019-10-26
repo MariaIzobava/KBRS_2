@@ -1,6 +1,7 @@
 package main.java.com.company.server;
 
 import main.java.com.company.async_encryptions.GM;
+import main.java.com.company.async_encryptions.RSA;
 import main.java.com.company.idea_cipher.modes.FileCipher;
 import main.java.com.company.idea_cipher.modes.OperationMode;
 import main.java.com.company.utils.Command;
@@ -12,12 +13,11 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class Server {
 
-     private static HashMap<String, String> credentialsList = new HashMap<>();
+    private static HashMap<String, String> credentialsList = new HashMap<>();
 
 
     public static void main(String[] args) {
@@ -59,6 +59,14 @@ public class Server {
         private ObjectOutputStream out = null;
         private ObjectInputStream in = null;
 
+        private enum AsyncMode {
+            NONE,
+            RSA,
+            GM
+        }
+
+        private AsyncMode mode = AsyncMode.NONE;
+
         private String getNewSessionKey() {
             Random rand = new Random();
             StringBuilder str = new StringBuilder();
@@ -74,7 +82,7 @@ public class Server {
             String home = new java.io.File( "." ).getCanonicalPath();
 
             System.out.printf("Sent from the client: %s\n", textName);
-            InitialTextPath = new String(home+PATH + textName + ".txt");
+            InitialTextPath = new String(home + PATH + textName + ".txt");
 
             if (!(new File(InitialTextPath).exists())) {
                 System.out.println("path:"+InitialTextPath);
@@ -91,15 +99,6 @@ public class Server {
 
             byte[] contents = Files.readAllBytes(Paths.get(encodedTextPath));
             ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, contents);
-
-            //RSA rsa = new RSA(publicKey);
-//            GM gm  = new GM(publicKey);
-//
-//            System.out.println("sessionKey="+sessionKey);
-//            String encryptedSessionKey = gm.encrypt(sessionKey);
-//            System.out.println("encryptedSessionKey="+encryptedSessionKey);
-
-            //ConnUtill.sendMsg(out, Command.CommandType.REQUEST_TEXT, encryptedSessionKey);
 
         }
 
@@ -119,18 +118,33 @@ public class Server {
 
                     switch (cmd.getCommandType()) {
 
-                        case REQUEST_ACCESS:
+                        case REQUEST_ACCESS_WITH_GM:
+                            mode = AsyncMode.GM;
                             publicKey = cmd.getParam();
-                            System.out.println("Public Key successfully updated");
+                            System.out.println("GM Public Key successfully updated");
                             sessionKey = getNewSessionKey();
 
-                            GM gm  = new GM(publicKey);
+                            GM gm = new GM(publicKey);
 
                             System.out.println("sessionKey="+sessionKey);
                             String encryptedSessionKey = gm.encrypt(sessionKey);
-                            System.out.println("encryptedSessionKey="+encryptedSessionKey);
 
-                            ConnUtill.sendMsg(out, Command.CommandType.REQUEST_ACCESS, encryptedSessionKey);
+                            ConnUtill.sendMsg(out, Command.CommandType.REQUEST_ACCESS_WITH_GM, encryptedSessionKey);
+                            break;
+
+
+                        case REQUEST_ACCESS_WITH_RSA:
+                            mode = AsyncMode.RSA;
+                            publicKey = cmd.getParam();
+                            System.out.println("RSA Public Key successfully updated");
+                            sessionKey = getNewSessionKey();
+
+                            RSA rsa  = new RSA(publicKey);
+
+                            System.out.println("sessionKey="+sessionKey);
+                            encryptedSessionKey = rsa.encrypt(sessionKey);
+
+                            ConnUtill.sendMsg(out, Command.CommandType.REQUEST_ACCESS_WITH_GM, encryptedSessionKey);
                             break;
 
                         case REQUEST_TEXT:
