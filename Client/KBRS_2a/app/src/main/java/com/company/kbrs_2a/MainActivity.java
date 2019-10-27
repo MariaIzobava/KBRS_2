@@ -41,11 +41,10 @@ public class MainActivity  extends AppCompatActivity {
     public static final int RSA_UPDATED = 1004;
     public static final int GM_UPDATED = 1005;
 
+    private Handler messageHandler;
 
     private GM gm;
     private RSA rsa;
-
-    private Handler messageHandler;
 
     private Socket socket;
     private ObjectOutputStream out;
@@ -167,7 +166,7 @@ public class MainActivity  extends AppCompatActivity {
 
                 // THIS IS THE PLACE WHERE WE CAN SET UP ENCRYPTION ALGORITHM!!
                 //generateRSA();
-                 generateGM();
+                generateGM();
                 getSessionKey();
                 // get encrypted session key
                 // decrypt session key using private key
@@ -256,6 +255,8 @@ public class MainActivity  extends AppCompatActivity {
                 SocketHandler.setSessionKey(rsa.decrypt(cmd_key.getParam()));
         }
 
+        sessionKey = SocketHandler.getSessionKey();
+
 
 
     }
@@ -283,7 +284,7 @@ public class MainActivity  extends AppCompatActivity {
         @Override
         protected String doInBackground(Void... params) {
             try {
-                isValidCredentials = apiAuthenticationClient.execute();
+                isValidCredentials = apiAuthenticationClient.execute(sessionKey);
             } catch (Exception e) {
                 Message message = messageHandler.obtainMessage(SERVER_ERROR, e.toString());
                 message.sendToTarget();
