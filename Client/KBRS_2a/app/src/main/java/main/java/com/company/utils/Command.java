@@ -43,7 +43,9 @@ public class Command  implements Serializable {
         ERROR,
         REQUEST_ACCESS_WITH_RSA,
         REQUEST_ACCESS_WITH_GM,
-        VERIFY_CREDENTIALS
+        VERIFY_CREDENTIALS,
+        SAVE_TEXT_INIT,
+        SAVE_TEXT_PROCEED
     }
 }
 

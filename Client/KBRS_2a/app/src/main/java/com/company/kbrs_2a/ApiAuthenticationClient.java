@@ -1,18 +1,12 @@
 package com.company.kbrs_2a;
 
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.util.Base64;
 
 import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -41,7 +35,6 @@ public class ApiAuthenticationClient {
     {
 
         // login and password should be encrypted
-
         try {
 
             String str = login + " " + password;

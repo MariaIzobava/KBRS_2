@@ -8,8 +8,6 @@ import main.java.com.company.utils.Command;
 import main.java.com.company.utils.ConnUtill;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
@@ -19,8 +17,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -111,6 +107,31 @@ public class Server {
 
         }
 
+        private void saveText(String textName, byte[] text) throws Exception {
+
+            String home = new java.io.File( "." ).getCanonicalPath();
+
+            System.out.println("Client wants to save modified text");
+
+            File outputDir = new File(home + PATH);
+            File encryptedFile = File.createTempFile("encrypted", "txt", outputDir);
+            File decryptedFile = new File(home + PATH + textName + ".txt");
+
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(encryptedFile));
+            bos.write(text);
+            bos.flush();
+            bos.close();
+
+            FileCipher task = new FileCipher(encryptedFile.getPath(),
+                    decryptedFile.getPath(), sessionKey, false, OperationMode.Mode.CFB);
+
+            task.cryptFile();
+            System.out.println("File was decrypted and saved as " + decryptedFile.getCanonicalPath());
+            ConnUtill.sendMsg(out, Command.CommandType.SAVE_TEXT_PROCEED, "Text was saved successfully");
+
+            encryptedFile.deleteOnExit();
+        }
+
 
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
@@ -121,6 +142,7 @@ public class Server {
             try {
                 out = new ObjectOutputStream(clientSocket.getOutputStream());
                 in = new ObjectInputStream(clientSocket.getInputStream());
+                Command prevCmd = null;
 
                 while (true) {
                     Command cmd = (Command)in.readObject();
@@ -135,7 +157,7 @@ public class Server {
 
                             GM gm = new GM(publicKey);
 
-                            System.out.println("sessionKey="+sessionKey);
+                            System.out.println("sessionKey=" + sessionKey);
                             String encryptedSessionKey = gm.encrypt(sessionKey);
 
                             ConnUtill.sendMsg(out, Command.CommandType.REQUEST_ACCESS_WITH_GM, encryptedSessionKey);
@@ -150,7 +172,7 @@ public class Server {
 
                             RSA rsa  = new RSA(publicKey);
 
-                            System.out.println("sessionKey="+sessionKey);
+                            System.out.println("sessionKey=" + sessionKey);
                             encryptedSessionKey = rsa.encrypt(sessionKey);
 
                             ConnUtill.sendMsg(out, Command.CommandType.REQUEST_ACCESS_WITH_GM, encryptedSessionKey);
@@ -164,12 +186,32 @@ public class Server {
                             resolveRequest(cmd.getParam());
                             break;
 
+                        case SAVE_TEXT_INIT:
+                            if (publicKey.equals("")) {
+                                ConnUtill.sendMsg(out, Command.CommandType.ERROR, "Set up Public Key first");
+                                break;
+                            }
+                            ConnUtill.sendMsg(out, Command.CommandType.SAVE_TEXT_INIT, "Ready for accepting text");
+                            break;
+
+                        case SAVE_TEXT_PROCEED:
+                            if (publicKey.equals("")) {
+                                ConnUtill.sendMsg(out, Command.CommandType.ERROR, "Set up Public Key first");
+                                break;
+                            }
+                            if (prevCmd == null || !prevCmd.getCommandType().equals(Command.CommandType.SAVE_TEXT_INIT)) {
+                                ConnUtill.sendMsg(out, Command.CommandType.ERROR, "SAVE TEXT command was not initialized");
+                                break;
+                            }
+                            System.out.println("Received text");
+                            saveText(prevCmd.getParam(), cmd.get_byteParam());
+                            break;
+
                         case VERIFY_CREDENTIALS:
                             // login and password should be decrypted
                             byte[] str = cmd.get_byteParam();
 
                             String[] credentials = decryptCredentials(sessionKey, str).split(" ");
-                            System.out.println("Decoded creds: " + credentials);
 
                             String msg = "false";
                             if (credentials.length == 2 &&
@@ -188,6 +230,8 @@ public class Server {
                             default: break;
 
                     }
+
+                    prevCmd = cmd;
 
                 }
 
