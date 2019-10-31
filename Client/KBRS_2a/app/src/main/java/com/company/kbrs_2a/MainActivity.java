@@ -9,10 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.company.async_encryptions.GM;
 import com.company.async_encryptions.RSA;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,7 +33,8 @@ public class MainActivity  extends AppCompatActivity {
     private String username;
     private String password;
     private EditText server;
-    private Button connect, generate_rsa;
+    private TextView rsa_output;
+    private Button connect, generate_rsa, rsa_mode, gm_mode;
 
     public static final int PORT = 32000;
 
@@ -40,11 +44,12 @@ public class MainActivity  extends AppCompatActivity {
     public static final int SERVER_ERROR = 1003;
     public static final int RSA_UPDATED = 1004;
     public static final int GM_UPDATED = 1005;
+    public static final int INIT = 1006;
 
     private Handler messageHandler;
 
-    private GM gm;
-    private RSA rsa;
+    private static GM gm;
+    private static RSA rsa;
 
     private Socket socket;
     private ObjectOutputStream out;
@@ -57,7 +62,7 @@ public class MainActivity  extends AppCompatActivity {
         GM
     }
 
-    private AsyncMode mode = AsyncMode.NONE;
+    private static AsyncMode mode = AsyncMode.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,11 +75,17 @@ public class MainActivity  extends AppCompatActivity {
             public void handleMessage(Message inputMessage) {
 
                 switch (inputMessage.what) {
+                    case INIT:
+                        rsa_mode.setEnabled(false);
+                        gm_mode.setEnabled(false);
+                        connect.setEnabled(true);
+                        generate_rsa.setEnabled(true);
+                        Toast.makeText(getApplicationContext(), (String)inputMessage.obj, Toast.LENGTH_LONG).show();
+                        break;
                     case CONNECTED:
                         editText_login_username.setEnabled(true);
                         editText_login_password.setEnabled(true);
                         button_login_login.setEnabled(true);
-                        generate_rsa.setEnabled(true);
                         Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_LONG).show();
                         break;
                     case NOT_CONNECTED:
@@ -103,14 +114,63 @@ public class MainActivity  extends AppCompatActivity {
         };
 
 
-        // TODO: Replace this with your own IP address or URL.
+        rsa_mode = findViewById(R.id.rsa_mode);
+        gm_mode = findViewById(R.id.gm_mode);
+
+        rsa_output = findViewById(R.id.rsa);
+
+        server = findViewById(R.id.server);
+        connect = findViewById(R.id.connect);
+
+        generate_rsa = findViewById(R.id.generate_rsa);
 
         editText_login_username = findViewById(R.id.editText_login_username);
         editText_login_password = findViewById(R.id.editText_login_password);
+        button_login_login = findViewById(R.id.button_login_login);
 
-        server = findViewById(R.id.server);
+
+        switch (mode) {
+            case GM:
+                rsa_mode.setBackgroundColor(1);
+                init();
+                break;
+            case RSA:
+                gm_mode.setBackgroundColor(1);
+                init();
+                break;
+            case NONE:
+                connect.setEnabled(false);
+        }
+
+        rsa_mode.setOnClickListener(view -> {
+            try{
+                gm_mode.setBackgroundColor(1);
+                generateRSA();
+                init();
+
+            } catch (Exception e) {}
+        });
+
+        gm_mode.setOnClickListener(view -> {
+            try{
+                rsa_mode.setBackgroundColor(1);
+                generateGM();
+                init();
+
+            } catch (Exception e) {}
+        });
+
+        /**
+         * THIS IS THE PLACE WHERE WE CAN SET UP ENCRYPTION ALGORITHM!!!
+         */
+
+        //if (gm == null) generateGM(); else displayGM();
+        //if (rsa == null) generateRSA(); else displayRSA();
+
+
+
         server.setText("10.0.2.2");
-        connect = findViewById(R.id.connect);
+
         connect.setOnClickListener(view -> {
             view.setEnabled(false);
             Thread thread1 = new Thread(new Start());
@@ -119,7 +179,25 @@ public class MainActivity  extends AppCompatActivity {
             // acquired session key
 
         });
-        button_login_login = findViewById(R.id.button_login_login);
+
+        generate_rsa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                generate_rsa.setEnabled(false);
+
+                switch (mode) {
+                    case GM:
+                        generateGM();
+                        displayGM();
+                        break;
+
+                    case RSA:
+                    default:
+                        generateRSA();
+                        displayRSA();
+                }
+            }
+        });
 
         button_login_login.setOnClickListener(v -> {
             try {
@@ -136,20 +214,18 @@ public class MainActivity  extends AppCompatActivity {
             }
         });
 
-        generate_rsa = findViewById(R.id.generate_rsa);
-        generate_rsa.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                generate_rsa.setEnabled(false);
-                Thread thread1 = new Thread(new Rsa());
-                thread1.start();
-            }
-        });
-
         editText_login_username.setEnabled(false);
         editText_login_password.setEnabled(false);
         button_login_login.setEnabled(false);
         generate_rsa.setEnabled(false);
+    }
+
+    void init() {
+        if (mode.equals(AsyncMode.RSA)) displayRSA();
+        else displayGM();
+        SocketHandler.init();
+        Message message = messageHandler.obtainMessage(INIT, "Client has no connection");
+        message.sendToTarget();
     }
 
     class Start implements Runnable {
@@ -164,9 +240,6 @@ public class MainActivity  extends AppCompatActivity {
                 Message message = messageHandler.obtainMessage(CONNECTED);
                 message.sendToTarget();
 
-                // THIS IS THE PLACE WHERE WE CAN SET UP ENCRYPTION ALGORITHM!!
-                //generateRSA();
-                generateGM();
                 getSessionKey();
                 // get encrypted session key
                 // decrypt session key using private key
@@ -180,44 +253,38 @@ public class MainActivity  extends AppCompatActivity {
         }
     }
 
-    class Rsa implements Runnable {
-        public void run() {
+    private void displayRSA() {
+        String msg = "Keys generated with RSA\nPrivate Key: " + rsa.getPrivateKey().substring(0, 20)
+                + "...\n" + "Public Key: " + rsa.getPublicKey().substring(0, 20) + "...";
+        rsa_output.clearComposingText();
+        rsa_output.setText(msg);
+    }
 
-            Message message;
-            switch (mode) {
-                case GM:
-                    generateGM();
-                    message = messageHandler.obtainMessage(GM_UPDATED);
-                    break;
-
-                case RSA:
-                default:
-                    generateRSA();
-                    mode = AsyncMode.RSA;
-                    message = messageHandler.obtainMessage(RSA_UPDATED);
-            }
-
-            message.sendToTarget();
-
-        }
+    private void  displayGM() {
+        String msg = "Keys generated with GM\nPrivate Key(p, q): " + gm.getPrivateKey() +
+                "\n" + "Public Key(n, a): " + gm.getPublicKey();
+        rsa_output.clearComposingText();
+        rsa_output.setText(msg);
     }
 
     private void generateRSA() {
 
         // Generate new RSA
         rsa = new RSA();
-
         mode = AsyncMode.RSA;
 
+        Message message = messageHandler.obtainMessage(RSA_UPDATED);
+        message.sendToTarget();
     }
 
     private void generateGM() {
 
         // Generate new GM
         gm = new GM();
-
         mode = AsyncMode.GM;
 
+        Message message = messageHandler.obtainMessage(GM_UPDATED);
+        message.sendToTarget();
     }
 
 
@@ -318,7 +385,6 @@ public class MainActivity  extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putString("username", username);
         bundle.putString("password", password);
-       // bundle.putString("socket", baseUrl);
         Intent intent = new Intent(this, AppActivity.class);
         intent.putExtras(bundle);
         startActivity(intent);

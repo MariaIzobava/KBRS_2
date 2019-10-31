@@ -27,6 +27,67 @@ tools:context="com.company.kbrs_2a.MainActivity">
     android:layout_height="match_parent"
     android:gravity="center">
 
+    <TextView
+        android:id="@+id/mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="-81dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="330dp"
+        android:layout_below="@+id/rsa"
+        android:text="PICK MODE:"
+         />
+
+    <Button
+        android:id="@+id/rsa_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="-101dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="220dp"
+        android:text="RSA"
+        android:layout_below="@+id/rsa" />
+
+    <Button
+        android:id="@+id/gm_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="-101dp"
+        android:layout_marginStart="210dp"
+        android:layout_marginEnd="90dp"
+        android:text="GM"
+        android:layout_below="@+id/rsa" />
+
+    <TextView
+        android:id="@+id/rsa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="-211dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:layout_below="@+id/server"
+        android:ems="10"
+
+        android:inputType="textMultiLine"
+        android:hint="RSA: null null"
+        />
+
 
     <Button
         android:id="@+id/connect"

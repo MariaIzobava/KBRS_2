@@ -40,7 +40,7 @@ public class AppActivity extends AppCompatActivity {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private String sessionKey;
-    private final int sessionKeyTimeOut =25000;
+    private final int sessionKeyTimeOut =5000;
     private CountDownTimer timer =  new CountDownTimer(sessionKeyTimeOut, 1000) {
         @Override
         public void onTick(long l) {

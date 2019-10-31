@@ -1,5 +1,7 @@
 package com.company.kbrs_2a;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -39,5 +41,26 @@ public class SocketHandler {
 
     public static void setSessionKey(String sessionKey) {
         SocketHandler.sessionKey = sessionKey;
+    }
+
+    public static void init() {
+        try {
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
+            if (in != null) {
+                in.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+            socket = null;
+            in = null;
+            out = null;
+            sessionKey = null;
+        }
+        catch (IOException e) {
+        }
     }
 }

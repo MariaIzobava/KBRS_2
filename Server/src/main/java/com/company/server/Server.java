@@ -236,17 +236,22 @@ public class Server {
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                System.out.println("Connection was teared down.");
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 try {
                     if (out != null) {
+                        out.flush();
                         out.close();
                     }
                     if (in != null)
                         in.close();
                     clientSocket.close();
+
+                    System.out.println("Client with sessionKey = " + sessionKey + " is disconnected.\n Deleting session.");
+                    sessionKey = null;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
